@@ -5,8 +5,8 @@ public class PrayerTimesTester {
     public static void main(String [] args){
         // format dates to the given pattern of am and pm
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("hh:mm a");
-        LocalDate localDate = LocalDate.of(2017, 1, 28);
-        PrayerTimesPerDay solarCalculations = new PrayerTimesPerDay(4, 23.620, 58.183, localDate, "omani".trim(), "not hanafi");
+        LocalDate localDate = LocalDate.of(2017, 6, 25);
+        PrayerTimesPerDay solarCalculations = new PrayerTimesPerDay(4, 57.1306229, 21.305724, localDate, "omani".trim(), "not hanafi");
 
 //        //System.out.println(l.minusDays(1).getDayOfYear());
 

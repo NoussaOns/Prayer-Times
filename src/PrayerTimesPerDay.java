@@ -241,7 +241,7 @@ public class PrayerTimesPerDay {
      * @return midnight hour
      */
     public double getMidNightHour() {
-        return (getFajtHour() + getSus()) / 2;
+        return 12 + (getFajtHour() + getSus()) / 2.0;
     }
 
     /**
@@ -249,8 +249,8 @@ public class PrayerTimesPerDay {
      * @return midnight time
      */
     public LocalTime getMidNight(){
-        int midTimeH = (int) floor(getFajtHour());
-        int midTimeM = (int) round((getFajtHour() - midTimeH) * 60);
+        int midTimeH = (int) floor(getMidNightHour());
+        int midTimeM = (int) round((getMidNightHour() - midTimeH) * 60);
         return LocalTime.of(midTimeH, midTimeM);
     }
 
