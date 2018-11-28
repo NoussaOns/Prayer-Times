@@ -1,5 +1,6 @@
 import java.time.LocalDate;
 import java.time.LocalTime;
+import static java.lang.Math.*;
 
 public class PrayerTimesPerDay {
 
@@ -100,35 +101,35 @@ public class PrayerTimesPerDay {
         ml = (280.46646 + jc * (36000.76983 + jc * 0.0003032)) % 360;
         ma = 357.52911 + jc * (35999.05029 - 0.0001537 * jc);
         ee = 0.016708634 - jc * (0.000042037 + 0.0000001267 * jc);
-        c = Math.sin(Math.toRadians(ma)) * (1.914602 - jc * (0.004817 + 0.000014 * jc)) + Math.sin(Math.toRadians(2 * ma)) * (0.019993 - 0.000101 * jc) + Math.sin(Math.toRadians(3 * ma)) * 0.000289;
+        c = sin(toRadians(ma)) * (1.914602 - jc * (0.004817 + 0.000014 * jc)) + sin(toRadians(2 * ma)) * (0.019993 - 0.000101 * jc) + sin(toRadians(3 * ma)) * 0.000289;
         stl = ml + c;
         sta = ma + c;
-        srv = (1.000001018 * (1 - Math.pow(ee, 2)) / (1 + ee * Math.cos(Math.toRadians(sta))));
-        sal = stl - 0.00569 - 0.00478 * Math.sin(Math.toRadians(125.04 - 1934.136 * jc));
+        srv = (1.000001018 * (1 - pow(ee, 2)) / (1 + ee * cos(toRadians(sta))));
+        sal = stl - 0.00569 - 0.00478 * sin(toRadians(125.04 - 1934.136 * jc));
         mo = 23 + (26 + ((21.448 - jc * (46.815 + jc * (0.00059 - jc * 0.001813)))) / 60) / 60;
-        oc = mo + 0.00256 * Math.cos(Math.toRadians(125.04 - 1934.136 * jc));
-        sd = Math.toDegrees(Math.asin(Math.sin(Math.toRadians(oc)) * Math.sin(Math.toRadians(sal))));
-        v = Math.pow(Math.tan(Math.toRadians(oc / 2)), 2);
-        et = 4 * Math.toDegrees(v * Math.sin(Math.toRadians(2 * ml)) - 2 * ee * Math.sin(Math.toRadians(ma)) + 4 * ee * v * Math.sin(Math.toRadians(ma)) * Math.cos(Math.toRadians(2 * ml)) - 0.5 * v * v * Math.sin(Math.toRadians(4 * ml)) - 1.25 * ee * ee * Math.sin(Math.toRadians(2 * ma)));
+        oc = mo + 0.00256 * cos(toRadians(125.04 - 1934.136 * jc));
+        sd = toDegrees(asin(sin(toRadians(oc)) * sin(toRadians(sal))));
+        v = pow(tan(toRadians(oc / 2)), 2);
+        et = 4 * toDegrees(v * sin(toRadians(2 * ml)) - 2 * ee * sin(toRadians(ma)) + 4 * ee * v * sin(toRadians(ma)) * cos(toRadians(2 * ml)) - 0.5 * v * v * sin(toRadians(4 * ml)) - 1.25 * ee * ee * sin(toRadians(2 * ma)));
 
 
         //Calculate sun rise time hour angle
-        ha = Math.toDegrees((Math.acos(-Math.sin(Math.toRadians(0.833)) / (Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(sd))) - Math.tan(Math.toRadians(latitude)) * Math.tan(Math.toRadians(sd)))));
+        ha = toDegrees(acos(cos(toRadians(90.833))/(cos(toRadians(latitude))*cos(toRadians(sd)))-tan(toRadians(latitude))*tan(toRadians(sd))));
 
         SolarNoon = (720 - 4 * longitude - et + ucl * 60) / 60.0;
         sunRise = SolarNoon - ha / 15.0;
         sus = SolarNoon + ha / 15.0;
 
-        solarNoonH = (int) Math.floor(SolarNoon);
-        solarNoonM = (int) Math.round((SolarNoon - solarNoonH) * 60);
+        solarNoonH = (int) floor(SolarNoon);
+        solarNoonM = (int) round((SolarNoon - solarNoonH) * 60);
         solarNoonTime = LocalTime.of(solarNoonH, solarNoonM);
 
-        sunRiseH = (int) Math.floor(sunRise);
-        sunRiseM = (int) Math.round((sunRise - sunRiseH) * 60);
+        sunRiseH = (int) floor(sunRise);
+        sunRiseM = (int) round((sunRise - sunRiseH) * 60);
         sunRiseTime = LocalTime.of(sunRiseH, sunRiseM);
 
-        sunSetH = (int) Math.floor(sus);
-        sunSetM = (int) Math.round((sus - sunSetH) * 60);
+        sunSetH = (int) floor(sus);
+        sunSetM = (int) round((sus - sunSetH) * 60);
         sunSetTime = LocalTime.of(sunSetH, sunSetM);
     }
 
@@ -153,8 +154,8 @@ public class PrayerTimesPerDay {
      * @return Fajr Time
      */
     public LocalTime getFajrTime() {
-        int fajrTimeH = (int) Math.floor(getFajtHour());
-        int fajrTimeM = (int) Math.round((getFajtHour() - fajrTimeH) * 60);
+        int fajrTimeH = (int) floor(getFajtHour());
+        int fajrTimeM = (int) round((getFajtHour() - fajrTimeH) * 60);
         return LocalTime.of(fajrTimeH, fajrTimeM);
     }
 
@@ -178,7 +179,7 @@ public class PrayerTimesPerDay {
             T = T_FAJR_KARACHI;
         }
 
-        double ho = Math.toDegrees(Math.acos((-Math.sin(Math.toRadians(T))) / (Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(sd))) - Math.tan(Math.toRadians(latitude)) * Math.tan(Math.toRadians(sd))));
+        double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
         double fajrHour = SolarNoon - ho / 15;
         return fajrHour;
     }
@@ -202,10 +203,10 @@ public class PrayerTimesPerDay {
             } else if (school.toLowerCase().equals("karachi")) {
                 T = T_ISHA_KARACHI;
             }
-            double ho = Math.toDegrees(Math.acos((-Math.sin(Math.toRadians(T))) / (Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(sd))) - Math.tan(Math.toRadians(latitude)) * Math.tan(Math.toRadians(sd))));
+            double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
             double ishaTime = SolarNoon + ho / 15;
-            int ishaTimeH = (int) Math.floor(ishaTime);
-            int ishaTimeM = (int) Math.round((ishaTime - ishaTimeH) * 60);
+            int ishaTimeH = (int) floor(ishaTime);
+            int ishaTimeM = (int) round((ishaTime - ishaTimeH) * 60);
             return LocalTime.of(ishaTimeH, ishaTimeM);
         } else {
             return getMaghribTime().plusMinutes(MINUTES_ISHA_UMMALGURAH);
@@ -221,17 +222,17 @@ public class PrayerTimesPerDay {
     public LocalTime getAsrTime() {
         double T = 0;
         if (asrSchool.toLowerCase().equals("hanafi")) {
-            T = Math.toDegrees(Math.atan(1 / (HANAFI + Math.tan(Math.toRadians(latitude - sd)))));
+            T = toDegrees(atan(1 / (HANAFI + tan(toRadians(latitude - sd)))));
         } else {
-            T = Math.toDegrees(Math.atan(1 / (NOT_HANAFI + Math.tan(Math.toRadians(latitude - sd)))));
+            T = toDegrees(atan(1 / (NOT_HANAFI + tan(toRadians(latitude - sd)))));
         }
 
-        double ho = Math.toDegrees(Math.acos((Math.sin(Math.toRadians(T))) / (Math.cos(Math.toRadians(latitude)) * Math.cos(Math.toRadians(sd))) - Math.tan(Math.toRadians(latitude)) * Math.tan(Math.toRadians(sd))));
+        double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
         double asrTime = SolarNoon + ho / 15;
-        int asrTimeH = (int) Math.floor(asrTime);
+        int asrTimeH = (int) floor(asrTime);
         System.out.print(asrTime);
         System.out.print(asrTimeH);
-        int asrTimeM = (int) Math.round((asrTime - asrTimeH - 0.01) * 60);
+        int asrTimeM = (int) round((asrTime - asrTimeH - 0.01) * 60);
         return LocalTime.of(asrTimeH, asrTimeM).plusMinutes(5);
     }
 
@@ -248,8 +249,8 @@ public class PrayerTimesPerDay {
      * @return midnight time
      */
     public LocalTime getMidNight(){
-        int midTimeH = (int) Math.floor(getFajtHour());
-        int midTimeM = (int) Math.round((getFajtHour() - midTimeH) * 60);
+        int midTimeH = (int) floor(getFajtHour());
+        int midTimeM = (int) round((getFajtHour() - midTimeH) * 60);
         return LocalTime.of(midTimeH, midTimeM);
     }
 
