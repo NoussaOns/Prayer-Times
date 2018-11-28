@@ -107,7 +107,7 @@ public class PrayerTimesPerDay {
         sal = stl - 0.00569 - 0.00478 * Math.sin(Math.toRadians(125.04 - 1934.136 * jc));
         mo = 23 + (26 + ((21.448 - jc * (46.815 + jc * (0.00059 - jc * 0.001813)))) / 60) / 60;
         oc = mo + 0.00256 * Math.cos(Math.toRadians(125.04 - 1934.136 * jc));
-        sd = Math.toDegrees(Math.asin(Math.sin(Math.toRadians(oc)) * Math.sin(Math.toRadians(stl))));
+        sd = Math.toDegrees(Math.asin(Math.sin(Math.toRadians(oc)) * Math.sin(Math.toRadians(sal))));
         v = Math.pow(Math.tan(Math.toRadians(oc / 2)), 2);
         et = 4 * Math.toDegrees(v * Math.sin(Math.toRadians(2 * ml)) - 2 * ee * Math.sin(Math.toRadians(ma)) + 4 * ee * v * Math.sin(Math.toRadians(ma)) * Math.cos(Math.toRadians(2 * ml)) - 0.5 * v * v * Math.sin(Math.toRadians(4 * ml)) - 1.25 * ee * ee * Math.sin(Math.toRadians(2 * ma)));
 
