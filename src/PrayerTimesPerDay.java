@@ -230,8 +230,6 @@ public class PrayerTimesPerDay {
         double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
         double asrTime = SolarNoon + ho / 15;
         int asrTimeH = (int) floor(asrTime);
-        System.out.print(asrTime);
-        System.out.print(asrTimeH);
         int asrTimeM = (int) round((asrTime - asrTimeH - 0.01) * 60);
         return LocalTime.of(asrTimeH, asrTimeM).plusMinutes(5);
     }
@@ -248,10 +246,19 @@ public class PrayerTimesPerDay {
      * Return the midnight time
      * @return midnight time
      */
-    public LocalTime getMidNight(){
+    public LocalTime getMidNightTime(){
         int midTimeH = (int) floor(getMidNightHour());
         int midTimeM = (int) round((getMidNightHour() - midTimeH) * 60);
         return LocalTime.of(midTimeH, midTimeM);
+    }
+
+    /**
+     * Returns an array of one day prayer times with sunrise and midnight times
+     * @return an array of one day prayer times with sunrise and midnight times
+     */
+    public LocalTime[] getDayPrayerTimes(){
+        LocalTime[] prayerTimes = {getFajrTime(),getSunRiseTime(),getDhuhurTime(),getAsrTime(),getMaghribTime(),getIshaTime(),getMidNightTime()};
+        return prayerTimes;
     }
 
     public double getLongitude() { return longitude; }
