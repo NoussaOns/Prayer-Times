@@ -97,7 +97,7 @@ public class PrayerTimesPerDay {
 
         jdn += 1 / 3.0;
         jc = (jdn - 2451545) / 36525.0;
-        ml = (280.46646 + jc * (36000.76983) + jc * 0.0003032) % 360;
+        ml = (280.46646 + jc * (36000.76983 + jc * 0.0003032)) % 360;
         ma = 357.52911 + jc * (35999.05029 - 0.0001537 * jc);
         ee = 0.016708634 - jc * (0.000042037 + 0.0000001267 * jc);
         c = Math.sin(Math.toRadians(ma)) * (1.914602 - jc * (0.004817 + 0.000014 * jc)) + Math.sin(Math.toRadians(2 * ma)) * (0.019993 - 0.000101 * jc) + Math.sin(Math.toRadians(3 * ma)) * 0.000289;
