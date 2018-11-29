@@ -9,7 +9,7 @@ public class PrayerTimesTester {
         LocalDate localDate = LocalDate.of(2017, 6, 25);
         PrayerTimesPerDay prayerTimesPerDay = new PrayerTimesPerDay(4, 57.1306229, 21.305724, localDate, "omani".trim(), "not hanafi");
 
-        System.out.println("Stop here!");
+
         LocalTime[] dayPrayerTimes = prayerTimesPerDay.getDayPrayerTimes();
 
 

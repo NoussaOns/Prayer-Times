@@ -20,14 +20,14 @@ public class PrayerTimesPerDay {
     private static final int NOT_HANAFI = 1;
     private static final int JDN_FROM_2000 = 2451545;
     private static final int STARTING_YEAR = 2000;
+
     private LocalDate localDate;
-    private LocalTime sunRiseTime, sunSetTime, solarNoonTime;
-    private double longitude;
-    private double latitude;
     private String school;
     private String asrSchool;
 
     // solar equations
+    private double longitude;
+    private double latitude;
     private double jdn;
     private double jc;
     private double ml;
@@ -45,15 +45,9 @@ public class PrayerTimesPerDay {
     private double et;
     private double ucl;
     private double ha;
-    private double SolarNoon;
+    private double solarNoon;
     private double sunRise;
-    private double sus;
-    private int solarNoonH;
-    private int solarNoonM;
-    private int sunRiseH;
-    private int sunRiseM;
-    private int sunSetH;
-    private int sunSetM;
+    private double sunSet;
 
 
     /**
@@ -82,7 +76,6 @@ public class PrayerTimesPerDay {
     private void compute() {
         //solar calculations
         jdn = JDN_FROM_2000;
-
         //for each year greater than the year 2000 (defined in constants)
         for (int currentYear = localDate.getYear(); currentYear > STARTING_YEAR; currentYear--) {
 
@@ -93,9 +86,7 @@ public class PrayerTimesPerDay {
                 jdn += 365;
             }
         }
-
         jdn += localDate.minusDays(1).getDayOfYear();
-
         jdn += 1 / 3.0;
         jc = (jdn - 2451545) / 36525.0;
         ml = (280.46646 + jc * (36000.76983 + jc * 0.0003032)) % 360;
@@ -116,54 +107,16 @@ public class PrayerTimesPerDay {
         //Calculate sun rise time hour angle
         ha = toDegrees(acos(cos(toRadians(90.833))/(cos(toRadians(latitude))*cos(toRadians(sd)))-tan(toRadians(latitude))*tan(toRadians(sd))));
 
-        SolarNoon = (720 - 4 * longitude - et + ucl * 60) / 60.0;
-        sunRise = SolarNoon - ha / 15.0;
-        sus = SolarNoon + ha / 15.0;
-
-        solarNoonH = (int) floor(SolarNoon);
-        solarNoonM = (int) round((SolarNoon - solarNoonH) * 60);
-        solarNoonTime = LocalTime.of(solarNoonH, solarNoonM);
-
-        sunRiseH = (int) floor(sunRise);
-        sunRiseM = (int) round((sunRise - sunRiseH) * 60);
-        sunRiseTime = LocalTime.of(sunRiseH, sunRiseM);
-
-        sunSetH = (int) floor(sus);
-        sunSetM = (int) round((sus - sunSetH) * 60);
-        sunSetTime = LocalTime.of(sunSetH, sunSetM);
-    }
-
-
-
-    public LocalTime getDhuhurTime() {
-        return solarNoonTime.plusMinutes(5);
-    }
-
-    /**
-     * Calculates and returns Maghrib Time
-     *
-     * @return Maghrib Time
-     */
-    public LocalTime getMaghribTime() {
-        return sunSetTime.plusMinutes(5);
-    }
-
-    /**
-     * Calculates and returns Fajr Time depending on the islamic school
-     *
-     * @return Fajr Time
-     */
-    public LocalTime getFajrTime() {
-        int fajrTimeH = (int) floor(getFajtHour());
-        int fajrTimeM = (int) round((getFajtHour() - fajrTimeH) * 60);
-        return LocalTime.of(fajrTimeH, fajrTimeM);
+        solarNoon = (720 - 4 * longitude - et + ucl * 60) / 60.0;
+        sunRise = solarNoon - ha / 15.0;
+        sunSet = solarNoon + ha / 15.0;
     }
 
     /**
      * Return the Fajr hour with decimals
      * @return Fajr hour
      */
-    private double getFajtHour() {
+    private double getFajrHour() {
         double T = 0;
         if (school.toLowerCase().equals("omani")) {
             T = T_FAJR_OMANI;
@@ -180,8 +133,43 @@ public class PrayerTimesPerDay {
         }
 
         double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
-        double fajrHour = SolarNoon - ho / 15;
+        double fajrHour = solarNoon - ho / 15;
         return fajrHour;
+    }
+
+    /**
+     * Returns dhuhur prayer time in hours with decimals
+     * @return dhuhur prayer time in hours with decimals
+     */
+    private double getDhuhurHour() {
+        return solarNoon + 5 /60.0;
+    }
+
+    /**
+     * Calculates and returns Asr Time depending on the islamic school hanafi or else
+     *
+     * @return Asr Hour
+     */
+    private double getAsrHour() {
+        double T = 0;
+        if (asrSchool.toLowerCase().equals("hanafi")) {
+            T = toDegrees(atan(1 / (HANAFI + tan(toRadians(latitude - sd)))));
+        } else {
+            T = toDegrees(atan(1 / (NOT_HANAFI + tan(toRadians(latitude - sd)))));
+        }
+
+        double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
+        double asrTime = solarNoon + ho / 15;
+        return asrTime;
+    }
+
+    /**
+     * Calculates and returns Maghrib Time
+     *
+     * @return Maghrib Time
+     */
+    private double getMaghribHour() {
+        return sunSet + 5 / 60.0;
     }
 
     /**
@@ -189,7 +177,7 @@ public class PrayerTimesPerDay {
      *
      * @return Isha Time
      */
-    public LocalTime getIshaTime() {
+    private double getIshaTime() {
         double T = 0;
         if (!school.equals("umm alqura")) {
             if (school.toLowerCase().equals("omani")) {
@@ -204,52 +192,32 @@ public class PrayerTimesPerDay {
                 T = T_ISHA_KARACHI;
             }
             double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
-            double ishaTime = SolarNoon + ho / 15;
-            int ishaTimeH = (int) floor(ishaTime);
-            int ishaTimeM = (int) round((ishaTime - ishaTimeH) * 60);
-            return LocalTime.of(ishaTimeH, ishaTimeM);
+            double ishaTime = solarNoon + ho / 15;
+            return ishaTime;
+
         } else {
-            return getMaghribTime().plusMinutes(MINUTES_ISHA_UMMALGURAH);
+            return getMaghribHour() + MINUTES_ISHA_UMMALGURAH / 60.0;
         }
-
-    }
-
-    /**
-     * Calculates and returns Asr Time depending on the islamic school hanafi or else
-     *
-     * @return Asr Time
-     */
-    public LocalTime getAsrTime() {
-        double T = 0;
-        if (asrSchool.toLowerCase().equals("hanafi")) {
-            T = toDegrees(atan(1 / (HANAFI + tan(toRadians(latitude - sd)))));
-        } else {
-            T = toDegrees(atan(1 / (NOT_HANAFI + tan(toRadians(latitude - sd)))));
-        }
-
-        double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
-        double asrTime = SolarNoon + ho / 15;
-        int asrTimeH = (int) floor(asrTime);
-        int asrTimeM = (int) round((asrTime - asrTimeH - 0.01) * 60);
-        return LocalTime.of(asrTimeH, asrTimeM).plusMinutes(5);
     }
 
     /**
      * Return the midnight hour with decimal places
      * @return midnight hour
      */
-    public double getMidNightHour() {
-        return 12 + (getFajtHour() + getSus()) / 2.0;
+    private double getMidNightHour() {
+        return 12 + (getFajrHour() + getSus()) / 2.0;
     }
 
+
     /**
-     * Return the midnight time
-     * @return midnight time
+     * Computes the local time depending on the time passed as an argument
+     * @param hourWithDecimals the time that you want to convert to LocalTime object
+     * @return LocalTime object representing the time that is in decimals
      */
-    public LocalTime getMidNightTime(){
-        int midTimeH = (int) floor(getMidNightHour());
-        int midTimeM = (int) round((getMidNightHour() - midTimeH) * 60);
-        return LocalTime.of(midTimeH, midTimeM);
+    private LocalTime getTime(double hourWithDecimals){
+        int hour = (int) floor(hourWithDecimals);
+        int minutes = (int) round((hourWithDecimals - hour) * 60);
+        return LocalTime.of(hour,0).plusMinutes(minutes);
     }
 
     /**
@@ -257,7 +225,7 @@ public class PrayerTimesPerDay {
      * @return an array of one day prayer times with sunrise and midnight times
      */
     public LocalTime[] getDayPrayerTimes(){
-        LocalTime[] prayerTimes = {getFajrTime(),getSunRiseTime(),getDhuhurTime(),getAsrTime(),getMaghribTime(),getIshaTime(),getMidNightTime()};
+        LocalTime[] prayerTimes = {getTime(getFajrHour()),getTime(sunRise),getTime(getDhuhurHour()),getTime(getAsrHour()),getTime(getMaghribHour()),getTime(getIshaTime()),getTime(getMidNightHour())};
         return prayerTimes;
     }
 
@@ -332,7 +300,7 @@ public class PrayerTimesPerDay {
     }
 
     public double getSon() {
-        return SolarNoon;
+        return solarNoon;
     }
 
     public double getSur() {
@@ -340,19 +308,7 @@ public class PrayerTimesPerDay {
     }
 
     public double getSus() {
-        return sus;
-    }
-
-    public LocalTime getSunRiseTime() {
-        return sunRiseTime;
-    }
-
-    public LocalTime getSunSetTime() {
-        return sunSetTime;
-    }
-
-    public LocalTime getSolarNoonTime() {
-        return solarNoonTime;
+        return sunSet;
     }
 
     @Override
