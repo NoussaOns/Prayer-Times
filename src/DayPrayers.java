@@ -1,30 +1,69 @@
 import java.time.LocalDate;
 import java.time.LocalTime;
 import static java.lang.Math.*;
-import static java.time.temporal.ChronoUnit.DAYS;
 
 public class DayPrayers {
 
-    private School school;
-    private AsrSchool asrSchool;
-    private static final double T_FAJR_OMANI = 18;
-    private static final double T_ISHA_OMANI = 18;
-    private static final double T_FAJR_MUSLIM_WORLD = 18;
-    private static final double T_ISHA_MUSLIM_WORLD = 17;
-    private static final double T_FAJR_ISNA = 17.5;
-    private static final double T_ISHA_ISNA = 15;
-    private static final double T_FAJR_EGYPTIAN = 19.5;
-    private static final double T_ISHA_EGYPTION = 17.5;
-    private static final double T_FAJR_UMMALQURAH = 18.5;
-    private static final long MINUTES_ISHA_UMMALGURAH = 90;
-    private static final double T_FAJR_KARACHI = 18;
-    private static final double T_ISHA_KARACHI = 18;
-    private static final int HANAFI = 2;
-    private static final int NOT_HANAFI = 1;
+    public enum School{
+        OMANI(new double[]{18, 18}),
+        MUSLIM_WORLD_LEAGUE(new double[] {18,17}),
+        ISNA(new double[] {17.5,15}),
+        EGYPT(new double[] {19.5,17.5}),
+        UMM_ALQURA(new double[] {18.5,90}),
+        KARACHI(new double[] {18,18}),
+        ;
+
+        private final double fajr;
+        private final double isha;
+
+        private School(double[] schools) {
+            this.fajr = schools[0];
+            this.isha = schools[1];
+        }
+    }
+
+    public enum AsrSchool{
+        HANAFI(2),
+        STANDARD(1)
+        ;
+
+        private final double asrShadow;
+
+        private AsrSchool(double shadow) {
+            this.asrShadow = shadow;
+        }
+    }
 
     private static final double JDN_FROM_1970 = 2440587.71;
 
+    private School school;
+    private AsrSchool asrSchool;
     private LocalDate localDate;
+
+    // solar equations
+    private double longitude;
+    private double latitude;
+    private double jdn;
+    private double jc;
+    private double ml;
+    private double ma;
+    private double ee;
+    private double c;
+    private double stl;
+    private double sta;
+    private double srv;
+    private double sal;
+    private double mo;
+    private double oc;
+    private double sd;
+    private double v;
+    private double et;
+    private double ucl;
+    private double ha;
+    private double solarNoon;
+    private double sunRise;
+    private double sunSet;
+
     /**
      * Constructs PrayerTimesPerDay object and calculates the necessary solar calculations
      * @param ucl the time zone
@@ -55,30 +94,6 @@ public class DayPrayers {
         double fajrHour = solarNoon - ho / 15;
         return fajrHour;
     }
-
-    // solar equations
-    private double longitude;
-    private double latitude;
-    private double jdn;
-    private double jc;
-    private double ml;
-    private double ma;
-    private double ee;
-    private double c;
-    private double stl;
-    private double sta;
-    private double srv;
-    private double sal;
-    private double mo;
-    private double oc;
-    private double sd;
-    private double v;
-    private double et;
-    private double ucl;
-    private double ha;
-    private double solarNoon;
-    private double sunRise;
-    private double sunSet;
 
     /**
      * Calculates and returns Asr Time depending on the islamic school hanafi or else
@@ -113,10 +128,8 @@ public class DayPrayers {
         v = pow(tan(toRadians(oc / 2)), 2);
         et = 4 * toDegrees(v * sin(toRadians(2 * ml)) - 2 * ee * sin(toRadians(ma)) + 4 * ee * v * sin(toRadians(ma)) * cos(toRadians(2 * ml)) - 0.5 * v * v * sin(toRadians(4 * ml)) - 1.25 * ee * ee * sin(toRadians(2 * ma)));
 
-
-        //Calculate sun rise time hour angle
+        //Calculate sunrise time hour angle
         ha = toDegrees(acos(cos(toRadians(90.833))/(cos(toRadians(latitude))*cos(toRadians(sd)))-tan(toRadians(latitude))*tan(toRadians(sd))));
-
         solarNoon = (720 - 4 * longitude - et + ucl * 60) / 60.0;
         sunRise = solarNoon - ha / 15.0;
         sunSet = solarNoon + ha / 15.0;
@@ -147,24 +160,6 @@ public class DayPrayers {
         return solarNoon + 5 /60.0;
     }
 
-    public enum School{
-        OMANI(new double[]{18, 18}),
-        MUSLIM_WORLD_LEAGUE(new double[] {18,17}),
-        ISNA(new double[] {17.5,15}),
-        EGYPT(new double[] {19.5,17.5}),
-        UMM_ALQURA(new double[] {18.5,90}),
-        KARACHI(new double[] {18,18}),
-        ;
-
-        private final double fajr;
-        private final double isha;
-
-        private School(double[] schools) {
-            this.fajr = schools[0];
-            this.isha = schools[1];
-        }
-    }
-
     /**
      * Calculates and returns Maghrib Time
      *
@@ -172,18 +167,6 @@ public class DayPrayers {
      */
     private double getMaghribHour() {
         return sunSet + 5 / 60.0;
-    }
-
-    public enum AsrSchool{
-        HANAFI(2),
-        STANDARD(1)
-        ;
-
-        private final double asrShadow;
-
-        private AsrSchool(double shadow) {
-            this.asrShadow = shadow;
-        }
     }
 
     /**
