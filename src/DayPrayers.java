@@ -1,3 +1,5 @@
+import org.omg.CORBA.TIMEOUT;
+
 import java.time.LocalDate;
 import java.time.LocalTime;
 import static java.lang.Math.*;
@@ -11,6 +13,7 @@ public class DayPrayers {
         EGYPT(new double[] {19.5,17.5}),
         UMM_ALQURA(new double[] {18.5,90}),
         KARACHI(new double[] {18,18}),
+        NORTH_AMERICA(new double[] {15,15})
         ;
 
         private final double fajr;
@@ -35,6 +38,7 @@ public class DayPrayers {
     }
 
     private static final double JDN_FROM_1970 = 2440587.71;
+    private static final int PRECAUTION_TIME = 5;
 
     private School school;
     private AsrSchool asrSchool;
@@ -67,15 +71,14 @@ public class DayPrayers {
     /**
      * Constructs PrayerTimesPerDay object and calculates the necessary solar calculations
      * @param ucl the time zone
-     * @param longitude the location's longitude
-     * @param latitude the location's latitude
+     * @param location the location's longitude & latitude as an array
      * @param date the date of the calculations
      * @param school the school on which Fajr & Isha prayers are based
      * @param asrSchool the school on which Asr prayer is based
      */
-    public DayPrayers(int ucl, double longitude, double latitude, LocalDate date, School school, AsrSchool asrSchool) {
-        this.longitude = longitude;
-        this.latitude = latitude;
+    public DayPrayers(int ucl, double[] location, LocalDate date, School school, AsrSchool asrSchool) {
+        this.longitude = location[0];
+        this.latitude = location[1];
         localDate = date;
         this.school = school;
         this.asrSchool = asrSchool;
@@ -104,7 +107,7 @@ public class DayPrayers {
         double T = toDegrees(atan(1 / (asrSchool.asrShadow + tan(toRadians(latitude - sd)))));
         double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
         double asrTime = solarNoon + ho / 15;
-        return asrTime + 5 / 60.0;
+        return asrTime + PRECAUTION_TIME / 60.0;
     }
 
     /**
@@ -157,7 +160,7 @@ public class DayPrayers {
      * @return dhuhur prayer time in hours with decimals
      */
     private double getDhuhurHour() {
-        return solarNoon + 5 /60.0;
+        return solarNoon + PRECAUTION_TIME /60.0;
     }
 
     /**
@@ -166,7 +169,7 @@ public class DayPrayers {
      * @return Maghrib Time
      */
     private double getMaghribHour() {
-        return sunSet + 5 / 60.0;
+        return sunSet + PRECAUTION_TIME / 60.0;
     }
 
     /**
