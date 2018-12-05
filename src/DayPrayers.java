@@ -3,7 +3,7 @@ import java.time.LocalTime;
 import static java.lang.Math.*;
 import static java.time.temporal.ChronoUnit.DAYS;
 
-public class PrayerTimesPerDay {
+public class DayPrayers {
 
     private static final double T_FAJR_OMANI = 18;
     private static final double T_ISHA_OMANI = 18;
@@ -60,7 +60,7 @@ public class PrayerTimesPerDay {
      * @param school the school on which Fajr & Isha prayers are based
      * @param asrSchool the school on which Asr prayer is based
      */
-    public PrayerTimesPerDay(int ucl, double longitude, double latitude, LocalDate date, String school, String asrSchool) {
+    public DayPrayers(int ucl, double longitude, double latitude, LocalDate date, String school, String asrSchool) {
         this.longitude = longitude;
         this.latitude = latitude;
         localDate = date;
@@ -76,9 +76,7 @@ public class PrayerTimesPerDay {
      */
     private void compute() {
         //solar calculations
-
         jdn += localDate.toEpochDay();
-
         jc = (jdn - 2451545) / 36525.0;
         ml = (280.46646 + jc * (36000.76983 + jc * 0.0003032)) % 360;
         ma = 357.52911 + jc * (35999.05029 - 0.0001537 * jc);
