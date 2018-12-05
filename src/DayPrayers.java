@@ -5,6 +5,8 @@ import static java.time.temporal.ChronoUnit.DAYS;
 
 public class DayPrayers {
 
+    private School school;
+    private AsrSchool asrSchool;
     private static final double T_FAJR_OMANI = 18;
     private static final double T_ISHA_OMANI = 18;
     private static final double T_FAJR_MUSLIM_WORLD = 18;
@@ -23,8 +25,36 @@ public class DayPrayers {
     private static final double JDN_FROM_1970 = 2440587.71;
 
     private LocalDate localDate;
-    private String school;
-    private String asrSchool;
+    /**
+     * Constructs PrayerTimesPerDay object and calculates the necessary solar calculations
+     * @param ucl the time zone
+     * @param longitude the location's longitude
+     * @param latitude the location's latitude
+     * @param date the date of the calculations
+     * @param school the school on which Fajr & Isha prayers are based
+     * @param asrSchool the school on which Asr prayer is based
+     */
+    public DayPrayers(int ucl, double longitude, double latitude, LocalDate date, School school, AsrSchool asrSchool) {
+        this.longitude = longitude;
+        this.latitude = latitude;
+        localDate = date;
+        this.school = school;
+        this.asrSchool = asrSchool;
+        jdn = JDN_FROM_1970;
+        this.ucl = ucl;
+        compute();
+    }
+
+    /**
+     * Return the Fajr hour with decimals
+     * @return Fajr hour
+     */
+    private double getFajrHour() {
+        double T = school.fajr;
+        double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
+        double fajrHour = solarNoon - ho / 15;
+        return fajrHour;
+    }
 
     // solar equations
     private double longitude;
@@ -50,25 +80,16 @@ public class DayPrayers {
     private double sunRise;
     private double sunSet;
 
-
     /**
-     * Constructs PrayerTimesPerDay object and calculates the necessary solar calculations
-     * @param ucl the time zone
-     * @param longitude the location's longitude
-     * @param latitude the location's latitude
-     * @param date the date of the calculations
-     * @param school the school on which Fajr & Isha prayers are based
-     * @param asrSchool the school on which Asr prayer is based
+     * Calculates and returns Asr Time depending on the islamic school hanafi or else
+     *
+     * @return Asr Hour
      */
-    public DayPrayers(int ucl, double longitude, double latitude, LocalDate date, String school, String asrSchool) {
-        this.longitude = longitude;
-        this.latitude = latitude;
-        localDate = date;
-        this.school = school;
-        this.asrSchool = asrSchool;
-        jdn = JDN_FROM_1970;
-        this.ucl = ucl;
-        compute();
+    private double getAsrHour() {
+        double T = toDegrees(atan(1 / (asrSchool.asrShadow + tan(toRadians(latitude - sd)))));
+        double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
+        double asrTime = solarNoon + ho / 15;
+        return asrTime + 5 / 60.0;
     }
 
     /**
@@ -102,28 +123,20 @@ public class DayPrayers {
     }
 
     /**
-     * Return the Fajr hour with decimals
-     * @return Fajr hour
+     * Calculates and returns Isha Time depending on the islamic school
+     *
+     * @return Isha Time
      */
-    private double getFajrHour() {
-        double T = 0;
-        if (school.toLowerCase().equals("omani")) {
-            T = T_FAJR_OMANI;
-        } else if (school.toLowerCase().equals("muslim world league")) {
-            T = T_FAJR_MUSLIM_WORLD;
-        } else if (school.toLowerCase().equals("isna")) {
-            T = T_FAJR_ISNA;
-        } else if (school.toLowerCase().equals("egypt")) {
-            T = T_FAJR_EGYPTIAN;
-        } else if (school.toLowerCase().equals("umm alqura")) {
-            T = T_FAJR_UMMALQURAH;
-        } else if (school.toLowerCase().equals("karachi")) {
-            T = T_FAJR_KARACHI;
+    private double getIshaTime() {
+        double T;
+        if (school.toString().equals("UMM_ALQURA")) {
+            return getMaghribHour() + school.isha / 60.0;
+        } else {
+            T = school.isha;
+            double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
+            double ishaTime = solarNoon + ho / 15;
+            return ishaTime;
         }
-
-        double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
-        double fajrHour = solarNoon - ho / 15;
-        return fajrHour;
     }
 
     /**
@@ -134,22 +147,22 @@ public class DayPrayers {
         return solarNoon + 5 /60.0;
     }
 
-    /**
-     * Calculates and returns Asr Time depending on the islamic school hanafi or else
-     *
-     * @return Asr Hour
-     */
-    private double getAsrHour() {
-        double T = 0;
-        if (asrSchool.toLowerCase().equals("hanafi")) {
-            T = toDegrees(atan(1 / (HANAFI + tan(toRadians(latitude - sd)))));
-        } else {
-            T = toDegrees(atan(1 / (NOT_HANAFI + tan(toRadians(latitude - sd)))));
-        }
+    public enum School{
+        OMANI(new double[]{18, 18}),
+        MUSLIM_WORLD_LEAGUE(new double[] {18,17}),
+        ISNA(new double[] {17.5,15}),
+        EGYPT(new double[] {19.5,17.5}),
+        UMM_ALQURA(new double[] {18.5,90}),
+        KARACHI(new double[] {18,18}),
+        ;
 
-        double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
-        double asrTime = solarNoon + ho / 15;
-        return asrTime + 5 / 60.0;
+        private final double fajr;
+        private final double isha;
+
+        private School(double[] schools) {
+            this.fajr = schools[0];
+            this.isha = schools[1];
+        }
     }
 
     /**
@@ -161,31 +174,15 @@ public class DayPrayers {
         return sunSet + 5 / 60.0;
     }
 
-    /**
-     * Calculates and returns Isha Time depending on the islamic school
-     *
-     * @return Isha Time
-     */
-    private double getIshaTime() {
-        double T = 0;
-        if (!school.equals("umm alqura")) {
-            if (school.toLowerCase().equals("omani")) {
-                T = T_ISHA_OMANI;
-            } else if (school.toLowerCase().equals("muslim world league")) {
-                T = T_ISHA_MUSLIM_WORLD;
-            } else if (school.toLowerCase().equals("isna")) {
-                T = T_ISHA_ISNA;
-            } else if (school.toLowerCase().equals("egypt")) {
-                T = T_ISHA_EGYPTION;
-            } else if (school.toLowerCase().equals("karachi")) {
-                T = T_ISHA_KARACHI;
-            }
-            double ho = toDegrees(acos((-sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
-            double ishaTime = solarNoon + ho / 15;
-            return ishaTime;
+    public enum AsrSchool{
+        HANAFI(2),
+        STANDARD(1)
+        ;
 
-        } else {
-            return getMaghribHour() + MINUTES_ISHA_UMMALGURAH / 60.0;
+        private final double asrShadow;
+
+        private AsrSchool(double shadow) {
+            this.asrShadow = shadow;
         }
     }
 
