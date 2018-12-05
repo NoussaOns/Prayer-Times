@@ -1,6 +1,7 @@
 import java.time.LocalDate;
 import java.time.LocalTime;
 import static java.lang.Math.*;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 public class PrayerTimesPerDay {
 
@@ -18,8 +19,8 @@ public class PrayerTimesPerDay {
     private static final double T_ISHA_KARACHI = 18;
     private static final int HANAFI = 2;
     private static final int NOT_HANAFI = 1;
-    private static final int JDN_FROM_2000 = 2451545;
-    private static final int STARTING_YEAR = 2000;
+
+    private static final double JDN_FROM_1970 = 2440587.71;
 
     private LocalDate localDate;
     private String school;
@@ -65,7 +66,7 @@ public class PrayerTimesPerDay {
         localDate = date;
         this.school = school;
         this.asrSchool = asrSchool;
-        jdn = 2458430.5;
+        jdn = JDN_FROM_1970;
         this.ucl = ucl;
         compute();
     }
@@ -75,19 +76,9 @@ public class PrayerTimesPerDay {
      */
     private void compute() {
         //solar calculations
-        jdn = JDN_FROM_2000;
-        //for each year greater than the year 2000 (defined in constants)
-        for (int currentYear = localDate.getYear(); currentYear > STARTING_YEAR; currentYear--) {
 
-            //if the current year is a leap year (Arbitrarily any day and month)
-            if (LocalDate.of(currentYear, 5, 5).isLeapYear()) {
-                jdn += 366;
-            } else {
-                jdn += 365;
-            }
-        }
-        jdn += localDate.minusDays(1).getDayOfYear();
-        jdn += 1 / 3.0;
+        jdn += localDate.toEpochDay();
+
         jc = (jdn - 2451545) / 36525.0;
         ml = (280.46646 + jc * (36000.76983 + jc * 0.0003032)) % 360;
         ma = 357.52911 + jc * (35999.05029 - 0.0001537 * jc);
@@ -160,7 +151,7 @@ public class PrayerTimesPerDay {
 
         double ho = toDegrees(acos((sin(toRadians(T))) / (cos(toRadians(latitude)) * cos(toRadians(sd))) - tan(toRadians(latitude)) * tan(toRadians(sd))));
         double asrTime = solarNoon + ho / 15;
-        return asrTime;
+        return asrTime + 5 / 60.0;
     }
 
     /**
